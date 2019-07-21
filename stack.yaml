@@ -1,0 +1,11 @@
+resolver: nightly-2019-07-04
+
+packages:
+- .
+
+extra-deps:
+- torrent-10000.1.1
+- bencode-0.6.0.0
+- polysemy-1.2.1.0
+- type-errors-0.2.0.0
+- type-errors-pretty-0.0.0.0
