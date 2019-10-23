@@ -3,10 +3,12 @@
 
 module Teletorrent.Effects.LocalFilesystem where
 
+import Control.Monad
 import Data.Kind
 import Polysemy
 import Polysemy.Trace
 import System.Process.Typed
+import System.Exit
 
 data LocalFilesystem (m :: Type -> Type) (a :: Type) where
   RemoveTorrentFile :: FilePath -> LocalFilesystem m ()
@@ -18,6 +20,10 @@ removeTorrentFile :: Member LocalFilesystem r => FilePath -> Sem r ()
 removeTorrentFileToIO :: (Member (Embed IO) r, Member Trace r) => Sem (LocalFilesystem : r) a -> Sem r a
 removeTorrentFileToIO = interpret \case
   RemoveTorrentFile f -> do
-    exitCode <- embed $ runProcess (proc "rm" ["-i", f])
-    trace (show exitCode)
-
+    (exitCode, out, err) <- embed $ readProcess (proc "rm" ["-i", f])
+    when (exitCode /= ExitSuccess) $ do
+      trace (show exitCode)
+      trace "out:"
+      trace $ show out
+      trace "err:"
+      trace $ show err

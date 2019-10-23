@@ -30,20 +30,33 @@ waitUntilPathExists :: Member RemoteBox r => FilePath -> Sem r ()
 remoteBoxToIO :: (Member (Reader Config) r, Member (Embed IO) r, Member Trace r) => Sem (RemoteBox : r) a -> Sem r a
 remoteBoxToIO = interpret \case
   TransferToRemoteInbox src -> do
+    trace "Uploading torrent file..."
     Config {..} <- ask
     let to = concat [remote_user, "@", remote_host, ":", remote_inbox_torrent_dir, "/"]
-    exitCode <- embed $ runProcess (proc "scp" [src, to])
-    trace (show exitCode)
+    (exitCode, out, err) <- embed $ readProcess (proc "scp" [src, to])
+    case exitCode of
+      ExitSuccess -> trace "Uploading torrent file... Done"
+      _ -> do
+        trace "Uploading torrent file... Failed"
+        trace "stdout:"
+        trace $ show out
+        trace "stderr:"
+        trace $ show err
+
   TransferFrom src dst -> do
+    trace "Downloading content..."
     Config {..} <- ask
     let from = concat [remote_user, "@", remote_host, ":\"", remote_finished_content_dir, "/", src, "\""]
     exitCode <- embed $ runProcess (proc "rsync" ["-P", "-a", "-e", "ssh", from, dst])
-    trace (show exitCode)
+    case exitCode of
+      ExitSuccess -> trace "Downloading content... Done"
+      _ -> trace "Downloading content... Failed"
   WaitUntilPathExists p -> do
     Config {..} <- ask
+    trace "Waiting for content to materialize on the remote box..."
     let remote = remote_user <> "@" <> remote_host
         isReady = do
-          exitCode <- runProcess (proc "ssh" [remote, "ls '" <> remote_finished_torrent_dir <> "/" <> p <> "'"])
+          (exitCode, _, _) <- readProcess (proc "ssh" [remote, "ls '" <> remote_finished_torrent_dir <> "/" <> p <> "'"])
           pure $ case exitCode of
             ExitSuccess -> True
             _ -> False
