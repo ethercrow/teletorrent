@@ -11,7 +11,6 @@ import Polysemy.Reader
 import Polysemy.Trace
 import System.Exit
 import System.Process.Typed
-
 import Teletorrent.Config
 
 data RemoteBox (m :: Type -> Type) (a :: Type) where
@@ -42,7 +41,6 @@ remoteBoxToIO = interpret \case
         trace $ show out
         trace "stderr:"
         trace $ show err
-
   TransferFrom src dst -> do
     trace "Downloading content..."
     Config {..} <- ask
@@ -63,4 +61,3 @@ remoteBoxToIO = interpret \case
     embed $ do
       whileM_ (not <$> isReady) $
         threadDelay 10_000_000
-

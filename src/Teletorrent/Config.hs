@@ -22,4 +22,3 @@ loadConfig :: IO Config
 loadConfig = do
   configDir <- getUserConfigDir "teletorrent"
   Dhall.input Dhall.auto (T.pack (configDir <> "/config.dhall"))
-

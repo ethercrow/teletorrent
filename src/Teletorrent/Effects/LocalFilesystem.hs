@@ -7,8 +7,8 @@ import Control.Monad
 import Data.Kind
 import Polysemy
 import Polysemy.Trace
-import System.Process.Typed
 import System.Exit
+import System.Process.Typed
 
 data LocalFilesystem (m :: Type -> Type) (a :: Type) where
   RemoveTorrentFile :: FilePath -> LocalFilesystem m ()

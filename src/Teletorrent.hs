@@ -18,10 +18,9 @@ import Data.Torrent
 import Polysemy
 import Polysemy.Reader
 import Polysemy.Trace
-
+import Teletorrent.Config
 import Teletorrent.Effects.LocalFilesystem
 import Teletorrent.Effects.RemoteBox
-import Teletorrent.Config
 
 data TorrentFileStuff
   = TorrentFileStuff
