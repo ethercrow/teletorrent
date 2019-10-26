@@ -20,10 +20,6 @@ removeTorrentFile :: Member LocalFilesystem r => FilePath -> Sem r ()
 removeTorrentFileToIO :: (Member (Embed IO) r, Member Trace r) => Sem (LocalFilesystem : r) a -> Sem r a
 removeTorrentFileToIO = interpret \case
   RemoveTorrentFile f -> do
-    (exitCode, out, err) <- embed $ readProcess (proc "rm" ["-i", f])
+    exitCode <- embed $ runProcess (proc "rm" ["-i", f])
     when (exitCode /= ExitSuccess) $ do
       trace (show exitCode)
-      trace "out:"
-      trace $ show out
-      trace "err:"
-      trace $ show err
