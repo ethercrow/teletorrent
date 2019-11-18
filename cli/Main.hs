@@ -1,10 +1,12 @@
+import Control.Monad
 import System.Environment
 import Teletorrent
 
 main :: IO ()
 main = do
-  [f] <- getArgs
-  tname <- guessName f
+  fs <- getArgs
+  tnames <- mapM guessName fs
   cfg <- loadConfig
-  let r = TorrentFileStuff f tname
-  teletorrentIO cfg r
+  let rs = zipWith TorrentFileStuff fs tnames
+  forM_ rs \r -> do
+    teletorrentIO cfg r
