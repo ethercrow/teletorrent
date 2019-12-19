@@ -45,7 +45,7 @@ remoteBoxToIO = interpret \case
     trace "Downloading content..."
     Config {..} <- ask
     let from = concat [remote_user, "@", remote_host, ":\"", remote_finished_content_dir, "/", src, "\""]
-    exitCode <- embed $ runProcess (proc "rsync" ["-P", "-a", "-e", "ssh", from, dst])
+    exitCode <- embed $ runProcess (proc "rsync" ["-P", "-a", "-e", "ssh", "--exclude", ".unwanted", from, dst])
     case exitCode of
       ExitSuccess -> trace "Downloading content... Done"
       _ -> trace "Downloading content... Failed"
