@@ -5,8 +5,10 @@ module Teletorrent.Effects.RemoteBox where
 
 import Control.Concurrent
 import Control.Monad.Loops
+import qualified Data.ByteString.Lazy.Char8 as BS
 import Data.Kind
 import Polysemy
+import Polysemy.Error
 import Polysemy.Reader
 import Polysemy.Trace
 import System.Exit
@@ -26,21 +28,19 @@ transferFrom :: Member RemoteBox r => FilePath -> FilePath -> Sem r ()
 
 waitUntilPathExists :: Member RemoteBox r => FilePath -> Sem r ()
 
-remoteBoxToIO :: (Member (Reader Config) r, Member (Embed IO) r, Member Trace r) => Sem (RemoteBox : r) a -> Sem r a
+remoteBoxToIO :: (Member (Error String) r, Member (Reader Config) r, Member (Embed IO) r, Member Trace r) => Sem (RemoteBox : r) a -> Sem r a
 remoteBoxToIO = interpret \case
   TransferToRemoteInbox src -> do
     trace "Uploading torrent file..."
     Config {..} <- ask
     let to = concat [remote_user, "@", remote_host, ":", remote_inbox_torrent_dir, "/"]
-    (exitCode, out, err) <- embed $ readProcess (proc "scp" [src, to])
+    (exitCode, _out, err) <- embed $ readProcess (proc "scp" [src, to])
     case exitCode of
       ExitSuccess -> trace "Uploading torrent file... Done"
       _ -> do
         trace "Uploading torrent file... Failed"
-        trace "stdout:"
-        trace $ show out
-        trace "stderr:"
-        trace $ show err
+        trace $ BS.unpack err
+        throw $ BS.unpack err
   TransferFrom src dst -> do
     trace "Downloading content..."
     Config {..} <- ask
@@ -48,7 +48,9 @@ remoteBoxToIO = interpret \case
     exitCode <- embed $ runProcess (proc "rsync" ["-P", "-a", "-e", "ssh", "--exclude", ".unwanted", from, dst])
     case exitCode of
       ExitSuccess -> trace "Downloading content... Done"
-      _ -> trace "Downloading content... Failed"
+      _ -> do
+        trace "Downloading content... Failed"
+        throw "Downloading failed"
   WaitUntilPathExists p -> do
     Config {..} <- ask
     trace "Waiting for content to materialize on the remote box..."

@@ -16,6 +16,7 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as T
 import Data.Torrent
 import Polysemy
+import Polysemy.Error
 import Polysemy.Reader
 import Polysemy.Trace
 import Teletorrent.Config
@@ -38,6 +39,7 @@ teletorrent ::
   Member (Reader TorrentFileStuff) r =>
   Member RemoteBox r =>
   Member LocalFilesystem r =>
+  Member (Error String) r =>
   Sem r ()
 teletorrent = do
   TorrentFileStuff f n <- ask
@@ -46,7 +48,7 @@ teletorrent = do
   transferFrom n "."
   removeTorrentFile f
 
-teletorrentIO :: Config -> TorrentFileStuff -> IO ()
+teletorrentIO :: Config -> TorrentFileStuff -> IO (Either String ())
 teletorrentIO cfg tfs =
   teletorrent
     & removeTorrentFileToIO
@@ -54,4 +56,5 @@ teletorrentIO cfg tfs =
     & runReader tfs
     & runReader cfg
     & traceToIO
+    & runError
     & runM
