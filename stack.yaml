@@ -1,11 +1,14 @@
-resolver: nightly-2019-07-04
+resolver: nightly-2020-02-14
 
 packages:
 - .
 
 extra-deps:
 - torrent-10000.1.1
-- bencode-0.6.0.0
-- polysemy-1.2.1.0
+- git: https://github.com/creichert/bencode
+  commit: f6ac20beed76181e5c52687022f623be3e55ccc9
+- polysemy-1.2.3.0
+- polysemy-plugin-0.2.4.0
+- ghc-tcplugins-extra-0.3.2
 - type-errors-0.2.0.0
-- type-errors-pretty-0.0.0.0
+- type-errors-pretty-0.0.1.0

@@ -1,8 +1,7 @@
 module Teletorrent.Config where
 
 import qualified Data.Text as T
-import Data.Torrent
-import qualified Dhall
+import Dhall (FromDhall, auto, input)
 import GHC.Generics (Generic)
 import System.Environment.XDG.BaseDir
 
@@ -16,9 +15,9 @@ data Config
       }
   deriving (Show, Generic)
 
-instance Dhall.Interpret Config
+instance FromDhall Config
 
 loadConfig :: IO Config
 loadConfig = do
   configDir <- getUserConfigDir "teletorrent"
-  Dhall.input Dhall.auto (T.pack (configDir <> "/config.dhall"))
+  input auto (T.pack (configDir <> "/config.dhall"))
