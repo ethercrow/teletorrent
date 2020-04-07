@@ -47,6 +47,7 @@ common options
     -fhide-source-paths
     -ferror-spans
     -freverse-errors
+    -O2
 
   default-language: Haskell2010
 
@@ -79,6 +80,10 @@ library
 executable teletorrent
   import: options, deps
   main-is: Main.hs
+  ghc-options:
+    -threaded
+    -rtsopts
+    -eventlog
   other-modules:
       Paths_teletorrent
   hs-source-dirs:
