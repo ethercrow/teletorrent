@@ -1,5 +1,5 @@
-import Control.Monad
 import System.Environment
+import System.Exit
 import Teletorrent
 
 main :: IO ()
@@ -8,5 +8,9 @@ main = do
   tnames <- mapM guessName fs
   cfg <- loadConfig
   let rs = zipWith TorrentFileStuff fs tnames
-  forM_ rs \r -> do
-    teletorrentIO cfg r
+  teletorrentIO cfg rs >>= \case
+    Right _ -> pure ()
+    Left err -> do
+      putStrLn err
+      exitFailure
+

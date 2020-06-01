@@ -10,6 +10,7 @@ module Teletorrent
   )
 where
 
+import Data.Foldable
 import qualified Data.ByteString.Lazy as BS
 import Data.Function
 import qualified Data.Text as T
@@ -36,19 +37,21 @@ guessName torrentFilePath = do
   pure (T.unpack (T.decodeUtf8 (BS.toStrict (tName info))))
 
 teletorrent ::
-  Member (Reader TorrentFileStuff) r =>
+  Member (Reader [TorrentFileStuff]) r =>
   Member RemoteBox r =>
   Member LocalFilesystem r =>
   Member (Error String) r =>
   Sem r ()
 teletorrent = do
-  TorrentFileStuff f n <- ask
-  transferToRemoteInbox f
-  waitUntilPathExists (n <> ".torrent")
-  transferFrom n "."
-  removeTorrentFile f
+  stuffs <- ask
+  for_ stuffs \(TorrentFileStuff f n) -> do
+    transferToRemoteInbox f
+    waitUntilPathExists (n <> ".torrent")
+    transferFrom n "."
+  for_ stuffs \(TorrentFileStuff f _) -> do
+    removeTorrentFile f
 
-teletorrentIO :: Config -> TorrentFileStuff -> IO (Either String ())
+teletorrentIO :: Config -> [TorrentFileStuff] -> IO (Either String ())
 teletorrentIO cfg tfs =
   teletorrent
     & removeTorrentFileToIO
