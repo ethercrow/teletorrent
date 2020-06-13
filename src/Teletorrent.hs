@@ -45,9 +45,13 @@ teletorrent ::
 teletorrent = do
   stuffs <- ask
   for_ stuffs \(TorrentFileStuff f n) -> do
+    printLocalDiskSpace
+    printRemoteDiskSpace
     transferToRemoteInbox f
     waitUntilPathExists (n <> ".torrent")
     transferFrom n "."
+    printLocalDiskSpace
+    printRemoteDiskSpace
   for_ stuffs \(TorrentFileStuff f _) -> do
     removeTorrentFile f
 

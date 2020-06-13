@@ -19,6 +19,7 @@ data RemoteBox (m :: Type -> Type) (a :: Type) where
   TransferToRemoteInbox :: FilePath -> RemoteBox m ()
   TransferFrom :: FilePath -> FilePath -> RemoteBox m ()
   WaitUntilPathExists :: FilePath -> RemoteBox m ()
+  PrintRemoteDiskSpace :: RemoteBox m ()
 
 makeSem_ ''RemoteBox
 
@@ -27,6 +28,8 @@ transferToRemoteInbox :: Member RemoteBox r => FilePath -> Sem r ()
 transferFrom :: Member RemoteBox r => FilePath -> FilePath -> Sem r ()
 
 waitUntilPathExists :: Member RemoteBox r => FilePath -> Sem r ()
+
+printRemoteDiskSpace :: Member RemoteBox r => Sem r ()
 
 remoteBoxToIO :: (Member (Error String) r, Member (Reader Config) r, Member (Embed IO) r, Member Trace r) => Sem (RemoteBox : r) a -> Sem r a
 remoteBoxToIO = interpret \case
@@ -63,3 +66,8 @@ remoteBoxToIO = interpret \case
     embed $ do
       whileM_ (not <$> isReady) $
         threadDelay 10_000_000
+  PrintRemoteDiskSpace -> do
+    Config {..} <- ask
+    let remote = remote_user <> "@" <> remote_host
+    embed $ runProcess (proc "ssh" [remote, "df -ha '" <> remote_inbox_torrent_dir <> "'"])
+    pure ()
