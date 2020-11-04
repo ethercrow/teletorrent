@@ -5,7 +5,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-18.04
     steps:
-    - uses: actions/checkout@v2.3.3
+    - uses: actions/checkout@v2.3.4
     - name: Install stack
       run: which stack || curl -sSL https://get.haskellstack.org/ | sh
     - name: Install GHC
@@ -17,7 +17,7 @@ jobs:
   build-macos:
     runs-on: macOS-latest
     steps:
-    - uses: actions/checkout@v2.3.3
+    - uses: actions/checkout@v2.3.4
     - name: Install stack
       run: which stack || curl -sSL https://get.haskellstack.org/ | sh
     - name: Install GHC
