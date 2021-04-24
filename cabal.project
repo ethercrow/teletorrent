@@ -1,0 +1,4 @@
+packages: teletorrent.cabal
+
+package dhall
+  flags: -with-http

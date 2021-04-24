@@ -2,8 +2,8 @@ name: Build
 on: [push]
 
 jobs:
-  build-linux:
-    runs-on: ubuntu-18.04
+  build-linux-stack:
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2.3.4
     - name: Install stack
@@ -14,7 +14,7 @@ jobs:
       run: |
         stack build --fast
 
-  build-macos:
+  build-macos-stack:
     runs-on: macOS-latest
     steps:
     - uses: actions/checkout@v2.3.4
