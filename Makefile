@@ -1,4 +1,8 @@
 
+.PHONY: build
+build:
+	cabal build all
+
 .PHONY: vim
 vim:
 	echo ":vsp\n:term" | nvim -s -
